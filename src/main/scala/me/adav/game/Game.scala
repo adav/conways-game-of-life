@@ -10,11 +10,15 @@ object Game {
       grid.getOrElse((x-1, y+1), Dead), grid.getOrElse((x, y+1), Dead), grid.getOrElse((x+1, y+1), Dead)
   ).count(Alive ==)
 
-  def tick(grid: Grid, maxX: Int, maxY: Int): Grid = grid.map {
-     case ((x, y), Alive) if getAliveNeighboursCount(x, y, grid) < 2 => (x, y) -> Dead
-     case ((x, y), Alive) if getAliveNeighboursCount(x, y, grid) >= 2 => (x, y) -> Alive
-     case ((x, y), Alive) if getAliveNeighboursCount(x, y, grid) > 3 => (x, y) -> Dead
-     case ((x, y), Dead) if getAliveNeighboursCount(x, y, grid) == 3 => (x, y) -> Alive
-     case cell => cell
+  def tick(grid: Grid, maxX: Int, maxY: Int): Grid = grid.map { case cell @ ((x, y), status) =>
+    val aliveNeighbours = getAliveNeighboursCount(x, y, grid)
+
+    cell.copy(_2 = status match {
+      case Alive if aliveNeighbours < 2 => Dead
+      case Alive if aliveNeighbours >= 2 => Alive
+      case Alive if aliveNeighbours > 3 => Dead
+      case Dead if aliveNeighbours == 3 => Alive
+      case s => s
+    })
   }
 }
